@@ -12,6 +12,15 @@ import { Calendar } from "@/components/ui/calendar"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import type { Deadline } from "@/lib/types"
 import { cn } from "@/lib/utils"
+type CustomDayProps = {
+  date: Date
+  selected?: boolean
+  today?: boolean
+  disabled?: boolean
+  onClick?: (e: React.MouseEvent) => void
+  onKeyDown?: (e: React.KeyboardEvent) => void
+  onFocus?: (e: React.FocusEvent) => void
+}
 
 export default function CalendarSection() {
   const [deadlines, setDeadlines] = useLocalStorage<Deadline[]>("deadlines", [])
@@ -55,13 +64,22 @@ export default function CalendarSection() {
   }
 
   const getDeadlinesForDate = (date: Date) => {
+    if (!date) return []
+
     return deadlines.filter((deadline) => {
-      const deadlineDate = new Date(deadline.date)
-      return (
-        deadlineDate.getDate() === date.getDate() &&
-        deadlineDate.getMonth() === date.getMonth() &&
-        deadlineDate.getFullYear() === date.getFullYear()
-      )
+      if (!deadline.date) return false
+
+      try {
+        const deadlineDate = new Date(deadline.date)
+        return (
+          deadlineDate.getDate() === date.getDate() &&
+          deadlineDate.getMonth() === date.getMonth() &&
+          deadlineDate.getFullYear() === date.getFullYear()
+        )
+      } catch (error) {
+        console.error("Error parsing deadline date:", error)
+        return false
+      }
     })
   }
 
@@ -89,7 +107,7 @@ export default function CalendarSection() {
   }
 
   return (
-    <section>
+    <div className="calendar-section">
       <div className="flex flex-col space-y-2 mb-8">
         <h1 className="text-3xl font-bold">Calendar</h1>
         <p className="text-muted-foreground">Manage your deadlines and important dates</p>
@@ -111,44 +129,35 @@ export default function CalendarSection() {
               </div>
             </CardHeader>
             <CardContent className="p-6">
-              <Calendar
-                mode="single"
-                month={currentMonth}
-                onMonthChange={setCurrentMonth}
-                className="rounded-md border"
-                components={{
-                  Day: ({ day, ...props }) => {
-                    const dayDeadlines = getDeadlinesForDate(day)
-                    const hasDeadlines = dayDeadlines.length > 0
-                    const hasCompletedDeadlines = dayDeadlines.some((d) => d.completed)
-                    const hasIncompleteDeadlines = dayDeadlines.some((d) => !d.completed)
-
-                    return (
-                      <motion.div whileHover={{ scale: 1.1 }} className="relative">
-                        <button
-                          {...props}
-                          className={cn(
-                            props.className,
-                            hasDeadlines && "font-bold",
-                            hasIncompleteDeadlines && "text-orange-500 dark:text-orange-400",
-                            hasCompletedDeadlines && !hasIncompleteDeadlines && "text-green-500 dark:text-green-400",
-                          )}
-                        />
-                        {hasDeadlines && (
-                          <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2">
-                            <div
-                              className={cn(
-                                "h-1 w-1 rounded-full",
-                                hasIncompleteDeadlines ? "bg-orange-500" : "bg-green-500",
-                              )}
-                            />
-                          </div>
-                        )}
-                      </motion.div>
-                    )
-                  },
-                }}
-              />
+            <Calendar
+  mode="single"
+  month={currentMonth}
+  onMonthChange={setCurrentMonth}
+  className="rounded-md border"
+  components={{
+    Day: ({ date, selected, today, disabled, onClick, onKeyDown, onFocus }: CustomDayProps) => {
+      const dayDeadlines = getDeadlinesForDate(date)
+      const hasDeadline = dayDeadlines.length > 0
+  
+      return (
+        <div className="relative w-full h-full flex items-center justify-center">
+          <button
+            onClick={onClick}
+            onKeyDown={onKeyDown}
+            onFocus={onFocus}
+            disabled={disabled}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted"
+          >
+            {date.getDate()}
+          </button>
+          {hasDeadline && (
+            <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-orange-500" />
+          )}
+        </div>
+      )
+    }
+  }}  
+/>
             </CardContent>
           </Card>
         </div>
@@ -256,6 +265,6 @@ export default function CalendarSection() {
           </Card>
         </div>
       </div>
-    </section>
+    </div>
   )
 }

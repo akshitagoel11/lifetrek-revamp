@@ -16,32 +16,37 @@ interface NavbarProps {
   activeSection: string
   setActiveSection: (section: string) => void
 }
-
-export default function Navbar({ activeSection, setActiveSection }: NavbarProps) {
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [showWelcome, setShowWelcome] = useState(false)
-  const { theme, setTheme } = useTheme()
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true)
-      } else {
-        setIsScrolled(false)
+  export default function Navbar({ activeSection, setActiveSection }: NavbarProps) {
+    const [isScrolled, setIsScrolled] = useState(false)
+    const [showWelcome, setShowWelcome] = useState(false)
+    const { theme, setTheme } = useTheme()
+  
+    const [mounted, setMounted] = useState(false)
+  
+    useEffect(() => {
+      setMounted(true)
+    }, [])
+  
+    useEffect(() => {
+      const handleScroll = () => {
+        if (window.scrollY > 10) {
+          setIsScrolled(true)
+        } else {
+          setIsScrolled(false)
+        }
       }
-    }
-
-    // Show welcome toast
-    setShowWelcome(true)
-    const timer = setTimeout(() => setShowWelcome(false), 3000)
-
-    window.addEventListener("scroll", handleScroll)
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-      clearTimeout(timer)
-    }
-  }, [])
-
+  
+      // Show welcome toast
+      setShowWelcome(true)
+      const timer = setTimeout(() => setShowWelcome(false), 3000)
+  
+      window.addEventListener("scroll", handleScroll)
+      return () => {
+        window.removeEventListener("scroll", handleScroll)
+        clearTimeout(timer)
+      }
+    }, [])
+  
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: <Home className="h-5 w-5" /> },
     { id: "skills", label: "Skills", icon: <Star className="h-5 w-5" /> },
@@ -195,10 +200,11 @@ export default function Navbar({ activeSection, setActiveSection }: NavbarProps)
             <div className="flex items-center space-x-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    {theme === "dark" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                    <span className="sr-only">Toggle theme</span>
-                  </Button>
+                <Button variant="ghost" size="icon">
+                  {mounted && (theme === "dark" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />)}
+                  <span className="sr-only">Toggle theme</span>
+                </Button>
+
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => setTheme("light")}>
