@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import type { Transaction } from "@/lib/types"
 import { cn } from "@/lib/utils"
+import { TransactionHistoryChart, SpendingAnalyticsChart } from "@/components/ui/financial-charts"
 
 export default function FinancialSection() {
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>("transactions", [
@@ -352,9 +353,7 @@ export default function FinancialSection() {
                       </div>
                     </div>
 
-                    <div className="h-[200px] bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
-                      <p className="text-muted-foreground">Transaction history chart will appear here</p>
-                    </div>
+                    <TransactionHistoryChart transactions={transactions} />
                   </div>
                 </CardContent>
               </Card>
@@ -367,9 +366,7 @@ export default function FinancialSection() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-6">
-                    <div className="h-[300px] bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
-                      <p className="text-muted-foreground">Spending by category chart will appear here</p>
-                    </div>
+                    <SpendingAnalyticsChart transactions={transactions} />
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
